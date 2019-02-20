@@ -14,7 +14,7 @@ class CMATrainer:
     """
     A training session.
     """
-    def __init__(self, session, variables=None, scale=1.0):
+    def __init__(self, session, variables=None, scale=2.0):
         """
         Create a training session.
 
@@ -36,7 +36,12 @@ class CMATrainer:
             stddev = sqrt(1 / float(var.get_shape()[0].value))
             param_stddevs.extend([stddev] * int(np.prod(var.get_shape())))
         self._param_stddevs = param_stddevs
-        self.cma = cma.CMAEvolutionStrategy([0] * len(param_stddevs), scale)
+        opt = cma.CMAOptions()
+        opt.set('CMA_mu', 3)
+        opt.set('popsize', 40)
+        #opt.set('CMA_cmean', 10)
+        self.cma = cma.CMAEvolutionStrategy([0] * len(param_stddevs), scale, opt)
+
 
     def train(self, roller):
         """
@@ -64,6 +69,8 @@ class CMATrainer:
             results.append(-mean_finished_reward(rollouts))
             steps += sum([r.num_steps for r in rollouts])
             rewards.extend([r.total_reward for r in rollouts])
+        #import ipdb; ipdb.set_trace()
+        #is the agent acting rationally at least?
         self.cma.tell(guesses, results)
         return steps, rewards
 

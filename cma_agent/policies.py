@@ -12,7 +12,7 @@ class ContinuousMLP(Model):
     """
     # pylint: disable=R0913
     def __init__(self, session, action_space, obs_vectorizer,
-                 layer_sizes=(8,), activation=tf.nn.relu):
+                 layer_sizes=(16,), activation=tf.nn.relu):
         """
         Create a continuous MLP policy.
 
