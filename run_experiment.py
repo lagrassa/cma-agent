@@ -27,7 +27,7 @@ def training_loop(env_id=None,
     local_variables = learn_setup(env_id=env_id, timesteps=timesteps, param_scale=param_scale, name=name, expnum=expnum, log_file=log_file)
     steps = 0
     while steps < timesteps:
-        sub_steps, success_rates = learn_iter(**local_variables)
+        sub_steps, _ = learn_iter(**local_variables)
         steps += sub_steps
 
 def learn_iter(roller=None, rewards=None, trainer=None):
@@ -36,6 +36,7 @@ def learn_iter(roller=None, rewards=None, trainer=None):
     print('%s: steps=%d mean=%f batch_mean=%f' %
           (env_id, steps, np.mean(rewards), np.mean(sub_rewards)))
     success_rate = None
+    success_rate = np.mean(np.array(sub_rewards) > 0)
     return sub_steps, success_rate
 
 def learn_setup(env_id=None, 
