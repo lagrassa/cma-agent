@@ -14,7 +14,7 @@ class CMATrainer:
     """
     A training session.
     """
-    def __init__(self, session, variables=None, scale=2.0):
+    def __init__(self, session, variables=None, scale=2.0, popsize=None, CMA_mu=None, CMA_cmean=1, CMA_rankmu=1, CMA_rankone=1):
         """
         Create a training session.
 
@@ -37,8 +37,12 @@ class CMATrainer:
             param_stddevs.extend([stddev] * int(np.prod(var.get_shape())))
         self._param_stddevs = param_stddevs
         opt = cma.CMAOptions()
-        opt.set('CMA_mu', 3)
-        opt.set('popsize', 40)
+        opt.set('CMA_mu', CMA_mu)
+   
+        opt.set('popsize', popsize)
+        opt.set('CMA_cmean', CMA_cmean)
+        opt.set('CMA_rankmu', CMA_rankmu)
+        opt.set('CMA_rankone', CMA_rankone)
         #opt.set('CMA_cmean', 10)
         self.cma = cma.CMAEvolutionStrategy([0] * len(param_stddevs), scale, opt)
 

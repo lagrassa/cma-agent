@@ -1,5 +1,5 @@
 """
-Run CMA-ES on an RL task.
+Rue CMA-ES on an RL task.
 """
 
 from multiprocessing import Pool, cpu_count
@@ -30,34 +30,46 @@ def training_loop(env_id=None,
         sub_steps, _ = learn_iter(**local_variables)
         steps += sub_steps
 
-def learn_iter(roller=None, rewards=None, trainer=None):
+def learn_iter(roller=None, rewards=None, trainer=None, update=None, env_id=None):
     sub_steps, sub_rewards = trainer.train(roller)
     rewards.extend(sub_rewards)
     print('%s: steps=%d mean=%f batch_mean=%f' %
-          (env_id, steps, np.mean(rewards), np.mean(sub_rewards)))
-    success_rate = None
-    success_rate = np.mean(np.array(sub_rewards) > 0)
+          (env_id, update, np.mean(rewards), np.mean(sub_rewards)))
+    success_rate = np.mean(np.array(sub_rewards) >= 0)
     return sub_steps, success_rate
 
 def learn_setup(env_id=None, 
                   timesteps=int(5e6),
+                  env_name = None,
                   param_scale=1,
                   name = "test",
                   expnum=0,
+                  env=None,
+                  popsize=None,
+                  n_episodes = None,
+                  n_steps_per_episode=None,
+                  CMA_mu=None,
+                  CMA_cmean=None,
+                  CMA_rankmu=None,
+                  CMA_rankone=None,
                   log_file=None):
     sess = tf.Session()
+    if env_id is None:
+        env_id = env_name
     if log_file is None:
-        log_file = os.path.join('results', env_id + name+"_"+str(expnum)+".monitor.csv")
-        log_npy = os.path.join('results', env_id+name+'_'+str(expnum)+'.npy')
-    env = LoggedEnv(gym.make(env_id), log_file, log_npy)
+        log_file = os.path.join('results', "recent" + name+"_"+str(expnum)+".monitor.csv")
+        log_npy = os.path.join('results', "recent"+name+'_'+str(expnum)+'.npy')
+    #env = LoggedEnv(env, log_file, log_npy)
+
     model = ContinuousMLP(sess, env.action_space, gym_space_vectorizer(env.observation_space))
-    roller = BasicRoller(env, model, min_episodes=3, min_steps=30)
+    roller = BasicRoller(env, model, min_episodes=n_episodes, min_steps=n_steps_per_episode)
     sess.run(tf.global_variables_initializer())
-    trainer = CMATrainer(sess, scale=param_scale)
+    trainer = CMATrainer(sess, scale=param_scale, CMA_mu=CMA_mu, CMA_cmean=CMA_cmean, CMA_rankmu=CMA_rankmu, CMA_rankone=CMA_rankone, popsize=popsize)
     rewards = []
     local_variables = {'roller':roller,
                        'trainer':trainer,
-                       'rewards':reward}
+                        'env_id':env_name,
+                       'rewards':rewards}
     return local_variables
 
 
@@ -71,5 +83,5 @@ if __name__ == '__main__':
     import sys
     if not os.path.isdir('results'):
         os.mkdir('results')
-    run_with_kwargs({'env_id':'Pendulum-v0', 'param_scale':1.5, 'expnum':int(sys.argv[2]), 'name':sys.argv[1]})
+    run_with_kwargs({'env_id':'FetchPush-v1', 'param_scale':1.5, 'expnum':int(sys.argv[2]), 'name':sys.argv[1]})
 
