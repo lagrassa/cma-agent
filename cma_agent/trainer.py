@@ -37,9 +37,9 @@ class CMATrainer:
             param_stddevs.extend([stddev] * int(np.prod(var.get_shape())))
         self._param_stddevs = param_stddevs
         opt = cma.CMAOptions()
-        opt.set('CMA_mu', CMA_mu)
+        #opt.set('CMA_mu', CMA_mu)
    
-        opt.set('popsize', popsize)
+        #opt.set('popsize', popsize)
         opt.set('CMA_cmean', CMA_cmean)
         opt.set('CMA_rankmu', CMA_rankmu)
         opt.set('CMA_rankone', CMA_rankone)
@@ -47,7 +47,7 @@ class CMATrainer:
         self.cma = cma.CMAEvolutionStrategy([0] * len(param_stddevs), scale, opt)
 
 
-    def train(self, roller):
+    def train(self, roller, test=False):
         """
         Take a step of training.
 
@@ -75,7 +75,8 @@ class CMATrainer:
             rewards.extend([r.total_reward for r in rollouts])
         #import ipdb; ipdb.set_trace()
         #is the agent acting rationally at least?
-        self.cma.tell(guesses, results)
+        if not test:
+            self.cma.tell(guesses, results)
         return steps, rewards
 
     def _put_parameters(self, vector):

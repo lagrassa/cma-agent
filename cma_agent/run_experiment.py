@@ -30,6 +30,14 @@ def training_loop(env_id=None,
         sub_steps, _ = learn_iter(**local_variables)
         steps += sub_steps
 
+def learn_test(roller=None, rewards=None, trainer=None, update=None, env_id=None):
+    sub_steps, sub_rewards = trainer.train(roller, test = True)
+    rewards.extend(sub_rewards)
+    print('%s: steps=%d mean=%f batch_mean=%f' %
+          (env_id, update, np.mean(rewards), np.mean(sub_rewards)))
+    success_rate = np.mean(np.array(sub_rewards) >= 0)
+    return success_rate
+
 def learn_iter(roller=None, rewards=None, trainer=None, update=None, env_id=None):
     sub_steps, sub_rewards = trainer.train(roller)
     rewards.extend(sub_rewards)
@@ -45,7 +53,6 @@ def learn_setup(env_id=None,
                   name = "test",
                   expnum=0,
                   env=None,
-                  popsize=None,
                   n_episodes = None,
                   n_steps_per_episode=None,
                   CMA_mu=None,
@@ -62,9 +69,9 @@ def learn_setup(env_id=None,
     #env = LoggedEnv(env, log_file, log_npy)
 
     model = ContinuousMLP(sess, env.action_space, gym_space_vectorizer(env.observation_space))
-    roller = BasicRoller(env, model, min_episodes=n_episodes, min_steps=n_steps_per_episode)
+    roller = BasicRoller(env, model, min_episodes=1, min_steps=n_steps_per_episode)
     sess.run(tf.global_variables_initializer())
-    trainer = CMATrainer(sess, scale=param_scale, CMA_mu=CMA_mu, CMA_cmean=CMA_cmean, CMA_rankmu=CMA_rankmu, CMA_rankone=CMA_rankone, popsize=popsize)
+    trainer = CMATrainer(sess, scale=param_scale, CMA_mu=CMA_mu, CMA_cmean=CMA_cmean, CMA_rankmu=CMA_rankmu, CMA_rankone=CMA_rankone, popsize=n_episodes)
     rewards = []
     local_variables = {'roller':roller,
                        'trainer':trainer,
