@@ -13,6 +13,6 @@ setup(
     author='Alex Nichol',
     author_email='unixpickle@gmail.com',
     license='MIT',
-    packages=['cma_agent'],
-    install_requires=['anyrl>=0.10.4<0.12.0', 'cma>=2.3.0<3.0.0']
+    packages=['cma_agent']
+    #install_requires=['anyrl>=0.10.4<0.12.0', 'cma>=2.3.0<3.0.0']
 )
